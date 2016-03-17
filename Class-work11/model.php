@@ -6,10 +6,10 @@ class Database {
     public $password;
     public $db;
 
-    public $error;
+    public $error=0;
     public $connection;
 
-    function __construct($a,$b,$c,$d)
+    public function __construct($a,$b,$c,$d)
     {
         $this->host=$a;
         $this->username=$b;
@@ -22,10 +22,22 @@ class Database {
         if(!$this->connection){
             $this->error=-1;
         }
+
+    }
+
+    public function insertData($connection,$table,$name,$extension,$path){
+        $fullPath=$path.$name.'.'.$extension;
+        $tempQuery="INSERT INTO $table (FileName,FileExtension, FilePath) VALUES ('$name','$extension','$fullPath')";
+
+        $query=mysqli_query($connection,$tempQuery);
+
+        if(!$query){
+            $this->error=-1;
+        }
     }
 }
 
-class File{
+class File extends Database{
     //properties
     public $fileName;
     public $fileExtension;
@@ -33,17 +45,19 @@ class File{
     public $filePath;
     public $fileGeneralType;
     public $fileDir;
+    public $connection;
 
     //default no error
     public $error=0;
 
     //constructor for selected file
-    function __construct($a){
+    function __construct($a,$b){
         $this->fileName=$a['name'];
         $this->fileExtension=end(explode('.',$a['name']));
-        $this->fileGeneralType=reset(explode('/',$a['type']));
+        $this->fileGeneralType=reset(explode('/',$a['type'])).rand();
         $this->filePath=$a['tmp_name'];
         $this->fileSize=$a['size'];
+        $this->connection=$b;
 
         $this->checkType();
     }
@@ -54,6 +68,7 @@ class File{
             //if size of file is satisfied set the directory
             if($this->checkSize()){
                 $this->fileDir='image/';
+                parent::insertData($this->connection,'image',$this->fileGeneralType,$this->fileExtension,$this->fileDir);
                 //add image file to certain directory
                 $this->addFile();
             }else{
@@ -64,6 +79,7 @@ class File{
         //if file is text change file upload directory to text/
         else if($this->fileGeneralType=='text'||$this->fileGeneralType=='application'){
             $this->fileDir='text/';
+            parent::insertData($this->connection,'text',$this->fileGeneralType,$this->fileExtension,$this->fileDir);
             $this->addFile();
         }
     }
@@ -79,7 +95,7 @@ class File{
     }
     //add file to selected directory
     function addFile(){
-        $checkMove=move_uploaded_file($this->filePath,$this->fileDir.$this->fileGeneralType.rand().'.'.$this->fileExtension);
+        $checkMove=move_uploaded_file($this->filePath,$this->fileDir.$this->fileGeneralType.'.'.$this->fileExtension);
         //if file can't be moved return error message
         if(!$checkMove){
             echo "Can\'t moved!";
