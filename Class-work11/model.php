@@ -35,6 +35,12 @@ class Database {
             $this->error=-1;
         }
     }
+
+    public function selectData($connection,$table){
+        $tempQuery="SELECT * FROM $table";
+        $query=mysqli_query($connection,$tempQuery);
+        return $query;
+    }
 }
 
 class File extends Database{
@@ -47,6 +53,7 @@ class File extends Database{
     public $fileDir;
     public $connection;
 
+    public $counter;
     //default no error
     public $error=0;
 
@@ -54,10 +61,11 @@ class File extends Database{
     function __construct($a,$b){
         $this->fileName=$a['name'];
         $this->fileExtension=end(explode('.',$a['name']));
-        $this->fileGeneralType=reset(explode('/',$a['type'])).rand();
+        $this->fileGeneralType=reset(explode('/',$a['type']));
         $this->filePath=$a['tmp_name'];
         $this->fileSize=$a['size'];
         $this->connection=$b;
+        $this->counter=rand();
 
         $this->checkType();
     }
@@ -68,7 +76,7 @@ class File extends Database{
             //if size of file is satisfied set the directory
             if($this->checkSize()){
                 $this->fileDir='image/';
-                parent::insertData($this->connection,'image',$this->fileGeneralType,$this->fileExtension,$this->fileDir);
+                parent::insertData($this->connection,'image',$this->fileGeneralType.$this->counter,$this->fileExtension,$this->fileDir);
                 //add image file to certain directory
                 $this->addFile();
             }else{
@@ -79,7 +87,7 @@ class File extends Database{
         //if file is text change file upload directory to text/
         else if($this->fileGeneralType=='text'||$this->fileGeneralType=='application'){
             $this->fileDir='text/';
-            parent::insertData($this->connection,'text',$this->fileGeneralType,$this->fileExtension,$this->fileDir);
+            parent::insertData($this->connection,'text',$this->fileGeneralType.$this->counter,$this->fileExtension,$this->fileDir);
             $this->addFile();
         }
     }
@@ -95,10 +103,42 @@ class File extends Database{
     }
     //add file to selected directory
     function addFile(){
-        $checkMove=move_uploaded_file($this->filePath,$this->fileDir.$this->fileGeneralType.'.'.$this->fileExtension);
+        $checkMove=move_uploaded_file($this->filePath,$this->fileDir.$this->fileGeneralType.$this->counter.'.'.$this->fileExtension);
         //if file can't be moved return error message
         if(!$checkMove){
             echo "Can\'t moved!";
         }
+    }
+}
+
+class ViewData extends Database{
+    public $query;
+
+    function __construct($a,$b)
+    {
+        $this->query=$a;
+        $this->showTable($b);
+    }
+    function showTable($select){
+        if(strcmp($select,'text')==0){
+            echo "<table style='border-collapse: collapse'>";
+            while($row=mysqli_fetch_assoc($this->query)){
+                echo "<tr>";
+                foreach($row as $value){
+                    echo "<td style='border: 1px solid black'>$value</td>";
+                }
+                echo "</tr>";
+            }
+            echo "</table>";
+        }
+        else if(strcmp($select,'image')==0){
+            echo "<div class='gallery'>";
+            while($row=mysqli_fetch_assoc($this->query)){
+                $image=$row['FilePath'];
+                echo "<div class='galleryItem'><img src='$image'/></div>";
+            }
+            echo "</div>";
+        }
+
     }
 }

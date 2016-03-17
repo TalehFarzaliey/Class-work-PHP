@@ -28,3 +28,11 @@ td{
     padding: 5px;
     border: 1px solid gray;
 }
+
+.galleryItem img{
+    width: 200px;
+    margin: 5px;
+}
+.galleryItem{
+    display: inline-block;
+}

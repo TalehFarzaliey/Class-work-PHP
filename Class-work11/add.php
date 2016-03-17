@@ -7,4 +7,6 @@ if(isset($_POST['submit'])){
     echo $newDB->error;
     $newFile=new File($_FILES['file'],$newDB->connection);
 
+    header("Location: view.php");
 }
+?>
