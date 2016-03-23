@@ -43,15 +43,36 @@ class News {
         $this->newsText = $newsText;
     }
 
-    public function insertData($connection){
-        $query="INSERT INTO news(NewsTitle, NewsDesc, NewsText, NewsThumbImg, NewsImage, NewsDate, NewsStatus) VALUES ('$this->newsTitle','$this->newsDesc','$this->newsText','$this->newsThumbImg','$this->newsImg','$this->newsDate','$this->newsStatus')";
-        $insertQuery=mysqli_query($connection,$query);
+    public function insertData($connection,$tmpName,$imgName){
+        if($this->imageUpload($tmpName,$imgName)){
+            $query="INSERT INTO news(NewsTitle, NewsDesc, NewsText, NewsThumbImg, NewsImage, NewsDate, NewsStatus) VALUES ('$this->newsTitle','$this->newsDesc','$this->newsText','$this->newsThumbImg','$this->newsImg','$this->newsDate','$this->newsStatus')";
+            $insertQuery=mysqli_query($connection,$query);
 
-        if($insertQuery){
-            echo "Success to insert";
+            if($insertQuery){
+                echo "Success to insert";
+
+            }else{
+                echo "Failed to insert";
+            }
         }else{
-            echo "Failed to insert";
+            echo "Failed to upload file";
         }
+
     }
 
+    public function imageUpload($tmpName,$imgName){
+        return move_uploaded_file($tmpName,'../app/upload/'.$imgName);
+    }
+
+    public function selectData($connection){
+        $query="SELECT NewsTitle, NewsDesc, NewsThumbImg FROM news WHERE NewsStatus=1";
+        $selectQuery=mysqli_query($connection,$query);
+
+        if($selectQuery){
+            return $selectQuery;
+        }else{
+            echo "Bad Getaway";
+        }
+
+    }
 }

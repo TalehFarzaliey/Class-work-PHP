@@ -8,14 +8,21 @@ if($newDB->error!=0){
 if(isset($_POST['submit'])){
     $newsTitle=$_POST['news_title'];
     $newsDesc=$_POST['news_desc'];
-    $newsImg=$_POST['news_image'];
-    $newsThumbImg=$_POST['news_image'];
+
+    $newsImgFile=$_FILES['news_image'];
+
+    $imgName=$newsImgFile['name'];
+    $imgTmpName=$newsImgFile['tmp_name'];
+
+    $newsImg='app/upload/'.$imgName;
+
+    $newsThumbImg=$newsImg;
     $newsDate=$_POST['news_date'];
     $newsStatus=$_POST['news_status'];
     $newsText=$_POST['news_text'];
 
     $newNews=new News($newsTitle, $newsDesc, $newsImg, $newsThumbImg, $newsDate, $newsStatus, $newsText);
-    $newNews->insertData($newDB->connection);
+    $newNews->insertData($newDB->connection,$imgTmpName,$imgName);
 }
 
 ?>
@@ -31,7 +38,7 @@ if(isset($_POST['submit'])){
     <div class="form-group">
         <input class="form-control" type="text" placeholder="News Title" name="news_title">
         <input class="form-control" type="text" placeholder="News Description" name="news_desc">
-        <input class="form-control" type="text" placeholder="News Image" name="news_image">
+        <input class="form-control" type="file" placeholder="News Image" name="news_image">
         <input class="form-control" type="date" placeholder="News Date" name="news_date">
         <label>Published</label>
         <input class="form-control" type="radio" value="1" name="news_status">
