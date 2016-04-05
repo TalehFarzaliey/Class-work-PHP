@@ -11,6 +11,7 @@ echo "<tr>
 <th>Year</th>
 </tr>";
 while($row=mysqli_fetch_object($queryResult)){
+
 echo "<tr>";
 
     echo "<td><a href='bookData.php?id=$row->BookId'>$row->BookTitle</a></td>";
